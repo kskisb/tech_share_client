@@ -55,7 +55,7 @@ export default function PostDetailPage() {
   }, [id]);
 
   const handleDelete = async () => {
-    if (!window.confirm("本当にこの記事を削除しますか？"))　return;
+    if (!window.confirm("本当にこの記事を削除しますか？")) return;
 
     try {
       await fetchApi(`/posts/${id}`, { method: "DELETE" });

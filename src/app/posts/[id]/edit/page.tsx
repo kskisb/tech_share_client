@@ -2,19 +2,29 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
+
+type EditPostFormData = {
+  title: string;
+  body: string;
+};
 
 export default function EditPostPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
 
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<EditPostFormData>();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -26,34 +36,33 @@ export default function EditPostPage() {
     const fetchPost = async () => {
       try {
         const postData = await fetchApi(`/posts/${id}`);
-        setTitle(postData.data.post.title);
-        setBody(postData.data.post.body);
+        reset({
+          title: postData.data.post.title,
+          body: postData.data.post.body,
+        });
       } catch (err: any) {
-        setError(err.message || "記事の取得に失敗しました");
+        setApiError(err.message || "記事の取得に失敗しました");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPost();
-  }, [id, router]);
+  }, [id, router, reset]);
 
-  const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsSubmitting(true);
+  const onSubmit = async (data: EditPostFormData) => {
+    setApiError("");
 
     try {
       await fetchApi(`/posts/${id}`, {
         method: "PUT",
         body: JSON.stringify({
-          post: { title, body }
+          post: data
         }),
       });
       router.push(`/posts/${id}`);
     } catch (err: any) {
-      setError(err.message || "記事の更新に失敗しました");
-      setIsSubmitting(false);
+      setApiError(err.message || "記事の更新に失敗しました");
     }
   };
 
@@ -66,19 +75,18 @@ export default function EditPostPage() {
       <div className="max-w-2xl w-full bg-white p-8 rounded-lg shadow">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">記事の編集</h1>
-          {/* キャンセル時は詳細画面に戻る */}
           <Link href={`/posts/${id}`} className="text-sm text-gray-500 hover:text-gray-700">
             キャンセル
           </Link>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="bg-red-50 text-red-500 p-3 rounded mb-6 text-sm">
-            {error}
+            {apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               タイトル
@@ -86,10 +94,11 @@ export default function EditPostPage() {
             <input
               type="text"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
+              {...register("title", { required: "タイトルを入力してください" })}
             />
+            {errors.title && (
+              <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+            )}
           </div>
 
           <div>
@@ -98,10 +107,11 @@ export default function EditPostPage() {
             </label>
             <textarea
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 h-64"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              required
+              {...register("body", { required: "本文を入力してください" })}
             />
+            {errors.body && (
+              <p className="text-red-500 text-xs mt-1">{errors.body.message}</p>
+            )}
           </div>
 
           <div className="flex justify-end">

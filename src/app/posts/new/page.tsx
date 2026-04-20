@@ -2,15 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 
+type NewPostFormData = {
+  title: string;
+  body: string;
+};
+
 export default function NewPostPage() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<NewPostFormData>();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -19,22 +28,19 @@ export default function NewPostPage() {
     }
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsSubmitting(true);
+  const onSubmit = async (data: NewPostFormData) => {
+    setApiError("");
 
     try {
       await fetchApi("/posts", {
         method: "POST",
         body: JSON.stringify({
-          post: { title, body }
+          post: data
         }),
       });
       router.push("/");
     } catch (err: any) {
-      setError((err.message || "記事の作成に失敗しました"));
-      setIsSubmitting(false);
+      setApiError(err.message || "記事の作成に失敗しました");
     }
   };
 
@@ -48,13 +54,13 @@ export default function NewPostPage() {
           </Link>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="bg-red-50 text-red-500 p-3 rounded mb-6 text-sm">
-            {error}
+            {apiError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               タイトル
@@ -63,10 +69,11 @@ export default function NewPostPage() {
               type="text"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               placeholder="記事のタイトルを入力"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
+              {...register("title", { required: "タイトルを入力してください" })}
             />
+            {errors.title && (
+              <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+            )}
           </div>
 
           <div>
@@ -76,16 +83,17 @@ export default function NewPostPage() {
             <textarea
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 h-64"
               placeholder="Markdownなどで記事の本文を入力（今回はプレーンテキスト）"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              required
+              {...register("body", { required: "本文を入力してください" })}
             />
+            {errors.body && (
+              <p className="text-red-500 text-xs mt-1">{errors.body.message}</p>
+            )}
           </div>
 
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting} // 投稿中はボタンを無効化
+              disabled={isSubmitting}
               className={`px-6 py-2 rounded text-white font-medium ${
                 isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
               }`}
