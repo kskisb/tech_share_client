@@ -28,7 +28,6 @@ export default function SignupPage() {
     try {
       const responseData = await fetchApi("/auth/signup", {
         method: "POST",
-        // dataオブジェクトの中に { name, email, password } がそのまま入っています
         body: JSON.stringify({ user: data }),
       });
 

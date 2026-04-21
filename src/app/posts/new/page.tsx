@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 
 type NewPostFormData = {
   title: string;
   body: string;
+};
+
+const authFetcher = async (url: string) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (!token) throw new Error("認証が必要です");
+  return fetchApi(url);
 };
 
 export default function NewPostPage() {
@@ -21,12 +28,12 @@ export default function NewPostPage() {
     formState: { errors, isSubmitting },
   } = useForm<NewPostFormData>();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+  useSWR("/auth/me", authFetcher, {
+    onError: () => {
+      localStorage.removeItem("token");
       router.push("/login");
-    }
-  }, [router]);
+    },
+  });
 
   const onSubmit = async (data: NewPostFormData) => {
     setApiError("");
@@ -35,7 +42,7 @@ export default function NewPostPage() {
       await fetchApi("/posts", {
         method: "POST",
         body: JSON.stringify({
-          post: data
+          post: data,
         }),
       });
       router.push("/");

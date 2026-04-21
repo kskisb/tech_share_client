@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 
@@ -24,35 +24,25 @@ export default function PostDetailPage() {
   const router = useRouter();
   const id = params.id;
 
-  const [post, setPost] = useState<PostDetail | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const fetcher = (url: string) => fetchApi(url);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const postData = await fetchApi(`/posts/${id}`);
-        setPost(postData.data.post);
+  const { data: postData, error: postError, isLoading: isPostLoading } = useSWR(
+    id ? `/posts/${id}` : null,
+    fetcher
+  );
 
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
-            const userData = await fetchApi("/auth/me");
-            setCurrentUser(userData.data.user);
-          } catch (err) {
-            // トークンが無効なら何もしない
-          }
-        }
-      } catch (err: any) {
-        setError(err.message || "記事の取得に失敗しました");
-      } finally {
-        setIsLoading(false);
+  const { data: userData } = useSWR(
+    () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
+    fetcher,
+    {
+      onError: () => {
+        localStorage.removeItem("token");
       }
-    };
+    }
+  );
 
-    fetchData();
-  }, [id]);
+  const post: PostDetail | undefined = postData?.data?.post;
+  const currentUser: User | undefined = userData?.data?.user;
 
   const handleDelete = async () => {
     if (!window.confirm("本当にこの記事を削除しますか？")) return;
@@ -65,14 +55,14 @@ export default function PostDetailPage() {
     }
   };
 
-  if (isLoading) {
+  if (isPostLoading) {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
   }
 
-  if (error || !post) {
+  if (postError || !post) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500 mb-4">{error || "記事が見つかりません"}</p>
+        <p className="text-red-500 mb-4">{postError?.message || "記事が見つかりません"}</p>
         <Link href="/" className="text-blue-600 hover:underline">トップへ戻る</Link>
       </div>
     );

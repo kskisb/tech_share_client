@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 
-// フォームデータの型定義
 type LoginFormData = {
   email: string;
   password: string;
+};
+
+const authFetcher = async (url: string) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (!token) throw new Error("認証が必要です");
+  return fetchApi(url);
 };
 
 export default function LoginPage() {
@@ -22,12 +28,12 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      router.push("/");
-    }
-  }, [router]);
+  useSWR("/auth/me", authFetcher, {
+    onError: () => {
+      localStorage.removeItem("token");
+      router.push("/login");
+    },
+  });
 
   const onSubmit = async (data: LoginFormData) => {
     setApiError("");

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 
 type Post = {
@@ -14,42 +13,29 @@ type Post = {
 }
 
 export default function HomePage() {
-  const router = useRouter();
-  const [user, setUser] = useState<{ name: string, email: string } | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const fetcher = async (url: string) => fetchApi(url);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const postsData = await fetchApi("/posts");
-        setPosts(postsData.data.posts);
+  const { data: postsData, isLoading: isPostsLoading } = useSWR("/posts", fetcher);
 
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
-            const userData = await fetchApi("/auth/me")
-            setUser(userData.data.user);
-          } catch (err) {
-            localStorage.removeItem("token");
-          }
-        }
-      } catch (err) {
-        console.error("記事の取得に失敗しました", err)
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: userData, mutate: mutateUser } =useSWR(
+    () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
+    fetcher,
+    {
+      onError: () => {
+        localStorage.removeItem("token");
+      },
+    }
+  );
 
-    fetchData();
-  }, []);
+  const posts: Post[] = postsData?.data?.posts || [];
+  const user = userData?.data?.user || null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setUser(null);
+    mutateUser(null);
   };
 
-  if (isLoading) {
+  if (isPostsLoading) {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
   }
 

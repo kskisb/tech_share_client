@@ -1,11 +1,14 @@
+// src/app/posts/[id]/edit/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 
+// フォームデータの型定義
 type EditPostFormData = {
   title: string;
   body: string;
@@ -17,38 +20,31 @@ export default function EditPostPage() {
   const id = params.id;
 
   const [apiError, setApiError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+
+  const fetcher = (url: string) => fetchApi(url);
+
+  const { data: postData, error: loadError, isLoading } = useSWR(
+    id ? `/posts/${id}` : null,
+    fetcher
+  );
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
-  } = useForm<EditPostFormData>();
+  } = useForm<EditPostFormData>({
+    values: postData?.data?.post ? {
+      title: postData.data.post.title,
+      body: postData.data.post.body,
+    } : undefined,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
-      return;
     }
-
-    const fetchPost = async () => {
-      try {
-        const postData = await fetchApi(`/posts/${id}`);
-        reset({
-          title: postData.data.post.title,
-          body: postData.data.post.body,
-        });
-      } catch (err: any) {
-        setApiError(err.message || "記事の取得に失敗しました");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [id, router, reset]);
+  }, [router]);
 
   const onSubmit = async (data: EditPostFormData) => {
     setApiError("");
@@ -68,6 +64,15 @@ export default function EditPostPage() {
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-red-500 mb-4">{loadError.message || "記事の取得に失敗しました"}</p>
+        <Link href="/" className="text-blue-600 hover:underline">トップへ戻る</Link>
+      </div>
+    );
   }
 
   return (
