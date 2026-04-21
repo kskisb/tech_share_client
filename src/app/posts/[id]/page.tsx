@@ -35,6 +35,7 @@ export default function PostDetailPage() {
   const [commentBody, setCommentBody] = useState("");
   const [commentError, setCommentError] = useState("");
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [isDeletingCommentId, setIsDeletingCommentId] = useState<number | null>(null);
 
   const fetcher = (url: string) => fetchApi(url);
 
@@ -97,6 +98,26 @@ export default function PostDetailPage() {
       router.push("/");
     } catch (err: any) {
       alert(err.message || "削除に失敗しました");
+    }
+  };
+
+  const handleCommentDelete = async (commentId: number) => {
+    if (!postId) return;
+
+    if (!window.confirm("本当にこのコメントを削除しますか？")) return;
+
+    setIsDeletingCommentId(commentId);
+
+    try {
+      await fetchApi(`/posts/${postId}/comments/${commentId}`, {
+        method: "DELETE",
+      });
+
+      await mutatePost();
+    } catch (err: any) {
+      alert(err.message || "コメントの削除に失敗しました");
+    } finally {
+      setIsDeletingCommentId(null);
     }
   };
 
@@ -192,10 +213,25 @@ export default function PostDetailPage() {
               <div className="space-y-3">
                 {comments.map((comment) => (
                   <div key={comment.id} className="bg-white border border-gray-200 rounded p-3">
-                    <p className="text-gray-800 whitespace-pre-wrap">{comment.body}</p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {new Date(comment.created_at).toLocaleString("ja-JP")}
-                    </p>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-gray-800 whitespace-pre-wrap">{comment.body}</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(comment.created_at).toLocaleString("ja-JP")}
+                        </p>
+                      </div>
+
+                      {currentUser && (currentUser.id === comment.user_id || currentUser.id === post.user_id) && (
+                        <button
+                          type="button"
+                          onClick={() => handleCommentDelete(comment.id)}
+                          disabled={isDeletingCommentId === comment.id}
+                          className="shrink-0 text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isDeletingCommentId === comment.id ? "削除中..." : "削除"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
