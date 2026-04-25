@@ -5,19 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
+import TagSelector from "@/components/TagSelector";
 import Link from "next/link";
 
 type NewPostFormData = {
   title: string;
   body: string;
-  tagNames: string;
-};
-
-const parseTagNames = (raw: string): string[] => {
-  return raw
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => name.length > 0);
 };
 
 const getErrorMessage = (err: unknown, fallback: string): string => {
@@ -36,6 +29,7 @@ const authFetcher = async (url: string) => {
 export default function NewPostPage() {
   const router = useRouter();
   const [apiError, setApiError] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
     register,
@@ -54,15 +48,13 @@ export default function NewPostPage() {
     setApiError("");
 
     try {
-      const tagNames = parseTagNames(data.tagNames);
-
       await fetchApi("/posts", {
         method: "POST",
         body: JSON.stringify({
           post: {
             title: data.title,
             body: data.body,
-            tag_names: tagNames,
+            tag_names: selectedTags,
           },
         }),
       });
@@ -122,13 +114,12 @@ export default function NewPostPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               タグ（任意）
             </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              placeholder="例: rails, api, jwt"
-              {...register("tagNames")}
+            <TagSelector
+              selectedTags={selectedTags}
+              onChange={setSelectedTags}
+              disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">カンマ区切りで複数指定できます</p>
+            <p className="text-xs text-gray-500 mt-1">候補から選択、または新しいタグを追加できます</p>
           </div>
 
           <div className="flex justify-end">

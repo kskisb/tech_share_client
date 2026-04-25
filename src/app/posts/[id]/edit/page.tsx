@@ -6,20 +6,18 @@ import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
+import TagSelector from "@/components/TagSelector";
 import Link from "next/link";
 
 // フォームデータの型定義
 type EditPostFormData = {
   title: string;
   body: string;
-  tagNames: string;
 };
 
-const parseTagNames = (raw: string): string[] => {
-  return raw
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => name.length > 0);
+type PostTag = {
+  id: number;
+  name: string;
 };
 
 const getErrorMessage = (err: unknown, fallback: string): string => {
@@ -35,6 +33,7 @@ export default function EditPostPage() {
   const id = params.id;
 
   const [apiError, setApiError] = useState("");
+  const [tagDraft, setTagDraft] = useState<string[] | null>(null);
 
   const fetcher = (url: string) => fetchApi(url);
 
@@ -46,14 +45,18 @@ export default function EditPostPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting },
   } = useForm<EditPostFormData>({
     values: postData?.data?.post ? {
       title: postData.data.post.title,
       body: postData.data.post.body,
-      tagNames: "",
     } : undefined,
   });
+
+  const initialTags: string[] = ((postData?.data?.post?.tags as PostTag[] | undefined) || []).map(
+    (tag) => tag.name
+  );
+  const selectedTags = tagDraft ?? initialTags;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -66,14 +69,11 @@ export default function EditPostPage() {
     setApiError("");
 
     try {
-      const postPayload: { title: string; body: string; tag_names?: string[] } = {
+      const postPayload: { title: string; body: string; tag_names: string[] } = {
         title: data.title,
         body: data.body,
+        tag_names: selectedTags,
       };
-
-      if (dirtyFields.tagNames) {
-        postPayload.tag_names = parseTagNames(data.tagNames);
-      }
 
       await fetchApi(`/posts/${id}`, {
         method: "PUT",
@@ -148,14 +148,13 @@ export default function EditPostPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               タグ（任意）
             </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              placeholder="例: rails, api, jwt"
-              {...register("tagNames")}
+            <TagSelector
+              selectedTags={selectedTags}
+              onChange={setTagDraft}
+              disabled={isSubmitting}
             />
             <p className="text-xs text-gray-500 mt-1">
-              カンマ区切りで指定。入力欄を変更した場合のみタグを更新します。
+              候補から選択、または新しいタグを追加できます
             </p>
           </div>
 
