@@ -11,8 +11,9 @@ type Post = {
   title: string;
   body: string;
   created_at: string;
+  like_count: number;
   tags?: { id: number; name: string }[];
-}
+};
 
 type Tag = {
   id: number;
@@ -29,7 +30,7 @@ export default function HomePage() {
   const { data: postsData, isLoading: isPostsLoading } = useSWR(postsEndpoint, fetcher);
   const { data: tagsData } = useSWR("/tags", fetcher);
 
-  const { data: userData, mutate: mutateUser } =useSWR(
+  const { data: userData, mutate: mutateUser } = useSWR(
     () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
     fetcher,
     {
@@ -52,9 +53,8 @@ export default function HomePage() {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
   }
 
-    return (
+  return (
     <div className="min-h-screen bg-gray-50">
-      {/* 画面上部のヘッダー（ナビゲーションバー） */}
       <header className="bg-white shadow">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-blue-600">Tech Share</h1>
@@ -83,7 +83,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 記事一覧部分 */}
       <main className="max-w-5xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">最新の記事</h2>
 
@@ -128,11 +127,11 @@ export default function HomePage() {
           </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* posts配列をループして、１件ずつカードとして表示 */}
             {posts.map((post) => (
               <Link href={`/posts/${post.id}`} key={post.id} className="block">
                 <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
+
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {post.tags.map((tag) => (
@@ -145,12 +144,14 @@ export default function HomePage() {
                       ))}
                     </div>
                   )}
-                  {/* 本文は先頭50文字だけ表示（プレビュー用） */}
-                  <p className="text-gray-600 text-sm mb-4">
+
+                  <p className="text-gray-600 text-sm mb-3">
                     {post.body.length > 50 ? post.body.substring(0, 50) + "..." : post.body}
                   </p>
-                  <div className="text-xs text-gray-400 text-right">
-                    {new Date(post.created_at).toLocaleDateString("ja-JP")}
+
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>いいね {post.like_count}</span>
+                    <span>{new Date(post.created_at).toLocaleDateString("ja-JP")}</span>
                   </div>
                 </div>
               </Link>
