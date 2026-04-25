@@ -12,6 +12,21 @@ import Link from "next/link";
 type EditPostFormData = {
   title: string;
   body: string;
+  tagNames: string;
+};
+
+const parseTagNames = (raw: string): string[] => {
+  return raw
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+};
+
+const getErrorMessage = (err: unknown, fallback: string): string => {
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return fallback;
 };
 
 export default function EditPostPage() {
@@ -31,11 +46,12 @@ export default function EditPostPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<EditPostFormData>({
     values: postData?.data?.post ? {
       title: postData.data.post.title,
       body: postData.data.post.body,
+      tagNames: "",
     } : undefined,
   });
 
@@ -50,15 +66,24 @@ export default function EditPostPage() {
     setApiError("");
 
     try {
+      const postPayload: { title: string; body: string; tag_names?: string[] } = {
+        title: data.title,
+        body: data.body,
+      };
+
+      if (dirtyFields.tagNames) {
+        postPayload.tag_names = parseTagNames(data.tagNames);
+      }
+
       await fetchApi(`/posts/${id}`, {
         method: "PUT",
         body: JSON.stringify({
-          post: data
+          post: postPayload,
         }),
       });
       router.push(`/posts/${id}`);
-    } catch (err: any) {
-      setApiError(err.message || "記事の更新に失敗しました");
+    } catch (err: unknown) {
+      setApiError(getErrorMessage(err, "記事の更新に失敗しました"));
     }
   };
 
@@ -117,6 +142,21 @@ export default function EditPostPage() {
             {errors.body && (
               <p className="text-red-500 text-xs mt-1">{errors.body.message}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              タグ（任意）
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              placeholder="例: rails, api, jwt"
+              {...register("tagNames")}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              カンマ区切りで指定。入力欄を変更した場合のみタグを更新します。
+            </p>
           </div>
 
           <div className="flex justify-end">

@@ -19,6 +19,7 @@ type PostDetail = {
   title: string;
   body: string;
   created_at: string;
+  tags?: { id: number; name: string }[];
   comments?: Comment[];
 }
 
@@ -27,6 +28,13 @@ type User = {
   name: string;
   email: string
 }
+
+const getErrorMessage = (err: unknown, fallback: string): string => {
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return fallback;
+};
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -83,8 +91,8 @@ export default function PostDetailPage() {
 
       setCommentBody("");
       await mutatePost();
-    } catch (err: any) {
-      setCommentError(err.message || "コメントの投稿に失敗しました");
+    } catch (err: unknown) {
+      setCommentError(getErrorMessage(err, "コメントの投稿に失敗しました"));
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -96,8 +104,8 @@ export default function PostDetailPage() {
     try {
       await fetchApi(`/posts/${postId}`, { method: "DELETE" });
       router.push("/");
-    } catch (err: any) {
-      alert(err.message || "削除に失敗しました");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "削除に失敗しました"));
     }
   };
 
@@ -114,8 +122,8 @@ export default function PostDetailPage() {
       });
 
       await mutatePost();
-    } catch (err: any) {
-      alert(err.message || "コメントの削除に失敗しました");
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, "コメントの削除に失敗しました"));
     } finally {
       setIsDeletingCommentId(null);
     }
@@ -148,6 +156,18 @@ export default function PostDetailPage() {
 
         <article className="bg-white p-8 rounded-lg shadow">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="px-2 py-0.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                >
+                  #{tag.name}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex justify-between items-center text-sm text-gray-500 border-b pb-4 mb-6">
             <span>投稿日: {new Date(post.created_at).toLocaleDateString("ja-JP")}</span>
 

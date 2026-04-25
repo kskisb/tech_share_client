@@ -10,6 +10,21 @@ import Link from "next/link";
 type NewPostFormData = {
   title: string;
   body: string;
+  tagNames: string;
+};
+
+const parseTagNames = (raw: string): string[] => {
+  return raw
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+};
+
+const getErrorMessage = (err: unknown, fallback: string): string => {
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return fallback;
 };
 
 const authFetcher = async (url: string) => {
@@ -39,15 +54,21 @@ export default function NewPostPage() {
     setApiError("");
 
     try {
+      const tagNames = parseTagNames(data.tagNames);
+
       await fetchApi("/posts", {
         method: "POST",
         body: JSON.stringify({
-          post: data,
+          post: {
+            title: data.title,
+            body: data.body,
+            tag_names: tagNames,
+          },
         }),
       });
       router.push("/");
-    } catch (err: any) {
-      setApiError(err.message || "記事の作成に失敗しました");
+    } catch (err: unknown) {
+      setApiError(getErrorMessage(err, "記事の作成に失敗しました"));
     }
   };
 
@@ -95,6 +116,19 @@ export default function NewPostPage() {
             {errors.body && (
               <p className="text-red-500 text-xs mt-1">{errors.body.message}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              タグ（任意）
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              placeholder="例: rails, api, jwt"
+              {...register("tagNames")}
+            />
+            <p className="text-xs text-gray-500 mt-1">カンマ区切りで複数指定できます</p>
           </div>
 
           <div className="flex justify-end">

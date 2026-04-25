@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
 
@@ -10,12 +11,23 @@ type Post = {
   title: string;
   body: string;
   created_at: string;
+  tags?: { id: number; name: string }[];
 }
 
+type Tag = {
+  id: number;
+  name: string;
+  created_at: string;
+};
+
 export default function HomePage() {
+  const searchParams = useSearchParams();
+  const selectedTag = searchParams.get("tag")?.trim() || "";
   const fetcher = async (url: string) => fetchApi(url);
 
-  const { data: postsData, isLoading: isPostsLoading } = useSWR("/posts", fetcher);
+  const postsEndpoint = selectedTag ? `/posts?tag=${encodeURIComponent(selectedTag)}` : "/posts";
+  const { data: postsData, isLoading: isPostsLoading } = useSWR(postsEndpoint, fetcher);
+  const { data: tagsData } = useSWR("/tags", fetcher);
 
   const { data: userData, mutate: mutateUser } =useSWR(
     () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
@@ -28,6 +40,7 @@ export default function HomePage() {
   );
 
   const posts: Post[] = postsData?.data?.posts || [];
+  const tags: Tag[] = tagsData?.data?.tags || [];
   const user = userData?.data?.user || null;
 
   const handleLogout = () => {
@@ -72,10 +85,47 @@ export default function HomePage() {
 
       {/* 記事一覧部分 */}
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">最新の記事</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">最新の記事</h2>
+
+        <section className="mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/"
+              className={`px-3 py-1 text-sm rounded-full border ${
+                selectedTag
+                  ? "border-gray-300 text-gray-600 hover:bg-gray-100"
+                  : "border-blue-600 bg-blue-600 text-white"
+              }`}
+            >
+              すべて
+            </Link>
+
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/?tag=${encodeURIComponent(tag.name)}`}
+                className={`px-3 py-1 text-sm rounded-full border ${
+                  selectedTag === tag.name
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                #{tag.name}
+              </Link>
+            ))}
+          </div>
+
+          {selectedTag && (
+            <p className="text-sm text-gray-600 mt-3">
+              タグ <span className="font-semibold">#{selectedTag}</span> で絞り込み中
+            </p>
+          )}
+        </section>
 
         {posts.length === 0 ? (
-          <p className="text-gray-500">まだ記事がありません。</p>
+          <p className="text-gray-500">
+            {selectedTag ? "このタグの記事はまだありません。" : "まだ記事がありません。"}
+          </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* posts配列をループして、１件ずつカードとして表示 */}
@@ -83,6 +133,18 @@ export default function HomePage() {
               <Link href={`/posts/${post.id}`} key={post.id} className="block">
                 <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {post.tags.map((tag) => (
+                        <span
+                          key={`${post.id}-${tag.id}`}
+                          className="px-2 py-0.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                        >
+                          #{tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {/* 本文は先頭50文字だけ表示（プレビュー用） */}
                   <p className="text-gray-600 text-sm mb-4">
                     {post.body.length > 50 ? post.body.substring(0, 50) + "..." : post.body}
