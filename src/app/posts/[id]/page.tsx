@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
+import AppNavbar from "@/components/AppNavbar";
 
 type Comment = {
   id: number;
@@ -59,7 +60,7 @@ export default function PostDetailPage() {
     mutate: mutatePost,
   } = useSWR(postId ? "/posts/" + postId : null, fetcher);
 
-  const { data: userData } = useSWR(
+  const { data: userData, mutate: mutateUser } = useSWR(
     () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
     fetcher,
     {
@@ -75,6 +76,11 @@ export default function PostDetailPage() {
   const isMyPost = currentUser?.id === post?.user_id;
   const liked = likeOptimistic?.liked ?? Boolean(post?.liked_by_current_user);
   const likeCount = likeOptimistic?.count ?? (post?.like_count ?? 0);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    mutateUser(null);
+  };
 
   const handleCommentSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -182,6 +188,8 @@ export default function PostDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AppNavbar user={currentUser} onLogout={handleLogout} />
+
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="mb-5 text-sm">
           <Link href="/" className="text-blue-600 hover:underline">
