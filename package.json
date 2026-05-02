@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:ts": "tsc --noEmit",
+    "gen:openapi": "openapi-typescript ../tech_share_api/doc/openapi.yaml -o src/lib/schema.d.ts",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" && eslint --ext .ts,.tsx,.js --fix src/"
   },
   "dependencies": {
     "next": "16.2.4",
+    "openapi-fetch": "^0.17.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.72.1",
@@ -22,7 +26,11 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.8.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
