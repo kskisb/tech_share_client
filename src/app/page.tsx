@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
-import AppNavbar from "@/components/AppNavbar";
 
 type Post = {
   id: number;
@@ -36,27 +35,8 @@ export default function HomePage() {
   );
   const { data: tagsData } = useSWR("/tags", fetcher);
 
-  const { data: userData, mutate: mutateUser } = useSWR(
-    () =>
-      typeof window !== "undefined" && localStorage.getItem("token")
-        ? "/auth/me"
-        : null,
-    fetcher,
-    {
-      onError: () => {
-        localStorage.removeItem("token");
-      },
-    },
-  );
-
   const posts: Post[] = postsData?.data?.posts || [];
   const tags: Tag[] = tagsData?.data?.tags || [];
-  const user = userData?.data?.user || null;
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    mutateUser(null);
-  };
 
   if (isPostsLoading) {
     return (
@@ -68,8 +48,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppNavbar user={user} onLogout={handleLogout} />
-
       <main className="max-w-5xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">最新の記事</h2>
 
