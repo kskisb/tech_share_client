@@ -17,20 +17,43 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}) as any);
+    let errorData: unknown;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = {};
+    }
 
-    const messageFromArray =
-      Array.isArray(errorData?.errors) && errorData.errors.length > 0
-        ? errorData.errors[0]?.message
-        : null;
+    let messageFromArray: string | null = null;
 
-    const message =
-      messageFromArray ||
-      errorData?.error ||
-      errorData?.message ||
-      "APIリクエストに失敗しました";
+    if (typeof errorData === "object" && errorData !== null) {
+      const maybeObj = errorData as Record<string, unknown>;
 
-    throw new Error(message);
+      if (Array.isArray(maybeObj.errors) && maybeObj.errors.length > 0) {
+        const first = maybeObj.errors[0];
+        if (typeof first === "object" && first !== null) {
+          const firstObj = first as Record<string, unknown>;
+          if (typeof firstObj.message === "string") {
+            messageFromArray = firstObj.message;
+          }
+        }
+      }
+
+      const maybeError = maybeObj.error;
+      const maybeMessage = maybeObj.message;
+
+      const message =
+        messageFromArray ||
+        (typeof maybeError === "string"
+          ? maybeError
+          : typeof maybeMessage === "string"
+            ? maybeMessage
+            : "APIリクエストに失敗しました");
+
+      throw new Error(message);
+    } else {
+      throw new Error("APIリクエストに失敗しました");
+    }
   }
 
   return response.json();

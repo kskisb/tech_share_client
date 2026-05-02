@@ -35,8 +35,9 @@ export default function SignupPage() {
         localStorage.setItem("token", responseData.meta.token);
         router.push("/");
       }
-    } catch (err: any) {
-      setApiError(err.message || "登録に失敗しました");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setApiError(message || "登録に失敗しました");
     }
   };
 
