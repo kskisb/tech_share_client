@@ -1,5 +1,6 @@
 "use client";
 
+import { apiClient } from "@/lib/api-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -40,14 +41,22 @@ export default function LoginPage() {
     setApiError("");
 
     try {
-      const responseData = await fetchApi("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const { data: responseData, error } = await apiClient.POST(
+        "/api/v1/auth/login",
+        {
+          body: data,
+        },
+      );
 
-      if (responseData.meta && responseData.meta.token) {
+      if (error) {
+        throw new Error("ログインに失敗しました");
+      }
+
+      if (responseData?.meta?.token) {
         localStorage.setItem("token", responseData.meta.token);
         router.push("/");
+      } else {
+        throw new Error("トークンの取得に失敗しました");
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
