@@ -1,6 +1,5 @@
 "use client";
 
-import { apiClient } from "@/lib/api-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -41,16 +40,10 @@ export default function LoginPage() {
     setApiError("");
 
     try {
-      const { data: responseData, error } = await apiClient.POST(
-        "/api/v1/auth/login",
-        {
-          body: data,
-        },
-      );
-
-      if (error) {
-        throw new Error("ログインに失敗しました");
-      }
+      const responseData = await fetchApi("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
 
       if (responseData?.meta?.token) {
         localStorage.setItem("token", responseData.meta.token);

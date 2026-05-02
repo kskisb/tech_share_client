@@ -1,7 +1,7 @@
 import createClient, { type Middleware } from "openapi-fetch";
 import type { paths } from "./schema";
 
-const API_BASE_URL = "http://localhost:3001/api/v1";
+const API_BASE_URL = "http://localhost:3001";
 
 export const apiClient = createClient<paths>({
   baseUrl: API_BASE_URL,
@@ -12,9 +12,12 @@ let authToken: string | null = null;
 const authMiddleware: Middleware = {
   onRequest: ({ request }) => {
     const headers = new Headers(request.headers);
+    const tokenFromStorage =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = tokenFromStorage ?? authToken;
 
-    if (authToken) {
-      headers.set("Authorization", `Bearer ${authToken}`);
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
     } else {
       headers.delete("Authorization");
     }
@@ -33,7 +36,5 @@ export function setAuthToken(token: string | null) {
 // client 初期化時に localStorage から token を読み込み
 if (typeof window !== "undefined") {
   const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+  setAuthToken(token);
 }
