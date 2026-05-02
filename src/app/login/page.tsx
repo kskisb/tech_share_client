@@ -45,9 +45,11 @@ export default function LoginPage() {
         body: JSON.stringify(data),
       });
 
-      if (responseData.meta && responseData.meta.token) {
+      if (responseData?.meta?.token) {
         localStorage.setItem("token", responseData.meta.token);
         router.push("/");
+      } else {
+        throw new Error("トークンの取得に失敗しました");
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);

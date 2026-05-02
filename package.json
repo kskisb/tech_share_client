@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:ts": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "gen:openapi": "openapi-typescript ../tech_share_api/doc/openapi.yaml -o src/lib/schema.d.ts",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" && eslint --ext .ts,.tsx,.js --fix src/"
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" && eslint --ext .ts,.tsx,.js --fix src/",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" && eslint --ext .ts,.tsx,.js src/"
   },
   "dependencies": {
     "next": "16.2.4",
