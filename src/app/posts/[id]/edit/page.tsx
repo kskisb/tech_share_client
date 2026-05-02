@@ -37,25 +37,28 @@ export default function EditPostPage() {
 
   const fetcher = (url: string) => fetchApi(url);
 
-  const { data: postData, error: loadError, isLoading } = useSWR(
-    id ? `/posts/${id}` : null,
-    fetcher
-  );
+  const {
+    data: postData,
+    error: loadError,
+    isLoading,
+  } = useSWR(id ? `/posts/${id}` : null, fetcher);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<EditPostFormData>({
-    values: postData?.data?.post ? {
-      title: postData.data.post.title,
-      body: postData.data.post.body,
-    } : undefined,
+    values: postData?.data?.post
+      ? {
+          title: postData.data.post.title,
+          body: postData.data.post.body,
+        }
+      : undefined,
   });
 
-  const initialTags: string[] = ((postData?.data?.post?.tags as PostTag[] | undefined) || []).map(
-    (tag) => tag.name
-  );
+  const initialTags: string[] = (
+    (postData?.data?.post?.tags as PostTag[] | undefined) || []
+  ).map((tag) => tag.name);
   const selectedTags = tagDraft ?? initialTags;
 
   useEffect(() => {
@@ -69,11 +72,12 @@ export default function EditPostPage() {
     setApiError("");
 
     try {
-      const postPayload: { title: string; body: string; tag_names: string[] } = {
-        title: data.title,
-        body: data.body,
-        tag_names: selectedTags,
-      };
+      const postPayload: { title: string; body: string; tag_names: string[] } =
+        {
+          title: data.title,
+          body: data.body,
+          tag_names: selectedTags,
+        };
 
       await fetchApi(`/posts/${id}`, {
         method: "PUT",
@@ -88,14 +92,22 @@ export default function EditPostPage() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        読み込み中...
+      </div>
+    );
   }
 
   if (loadError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500 mb-4">{loadError.message || "記事の取得に失敗しました"}</p>
-        <Link href="/" className="text-blue-600 hover:underline">トップへ戻る</Link>
+        <p className="text-red-500 mb-4">
+          {loadError.message || "記事の取得に失敗しました"}
+        </p>
+        <Link href="/" className="text-blue-600 hover:underline">
+          トップへ戻る
+        </Link>
       </div>
     );
   }
@@ -105,7 +117,10 @@ export default function EditPostPage() {
       <div className="max-w-2xl w-full bg-white p-8 rounded-lg shadow">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">記事の編集</h1>
-          <Link href={`/posts/${id}`} className="text-sm text-gray-500 hover:text-gray-700">
+          <Link
+            href={`/posts/${id}`}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
             キャンセル
           </Link>
         </div>
@@ -127,7 +142,9 @@ export default function EditPostPage() {
               {...register("title", { required: "タイトルを入力してください" })}
             />
             {errors.title && (
-              <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
@@ -163,7 +180,9 @@ export default function EditPostPage() {
               type="submit"
               disabled={isSubmitting}
               className={`px-6 py-2 rounded text-white font-medium ${
-                isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                isSubmitting
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
               {isSubmitting ? "更新中..." : "更新する"}

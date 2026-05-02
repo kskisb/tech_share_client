@@ -27,18 +27,26 @@ export default function HomePage() {
   const selectedTag = searchParams.get("tag")?.trim() || "";
   const fetcher = async (url: string) => fetchApi(url);
 
-  const postsEndpoint = selectedTag ? `/posts?tag=${encodeURIComponent(selectedTag)}` : "/posts";
-  const { data: postsData, isLoading: isPostsLoading } = useSWR(postsEndpoint, fetcher);
+  const postsEndpoint = selectedTag
+    ? `/posts?tag=${encodeURIComponent(selectedTag)}`
+    : "/posts";
+  const { data: postsData, isLoading: isPostsLoading } = useSWR(
+    postsEndpoint,
+    fetcher,
+  );
   const { data: tagsData } = useSWR("/tags", fetcher);
 
   const { data: userData, mutate: mutateUser } = useSWR(
-    () => (typeof window !== "undefined" && localStorage.getItem("token") ? "/auth/me" : null),
+    () =>
+      typeof window !== "undefined" && localStorage.getItem("token")
+        ? "/auth/me"
+        : null,
     fetcher,
     {
       onError: () => {
         localStorage.removeItem("token");
       },
-    }
+    },
   );
 
   const posts: Post[] = postsData?.data?.posts || [];
@@ -51,7 +59,11 @@ export default function HomePage() {
   };
 
   if (isPostsLoading) {
-    return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        読み込み中...
+      </div>
+    );
   }
 
   return (
@@ -91,21 +103,26 @@ export default function HomePage() {
 
           {selectedTag && (
             <p className="text-sm text-gray-600 mt-3">
-              タグ <span className="font-semibold">#{selectedTag}</span> で絞り込み中
+              タグ <span className="font-semibold">#{selectedTag}</span>{" "}
+              で絞り込み中
             </p>
           )}
         </section>
 
         {posts.length === 0 ? (
           <p className="text-gray-500">
-            {selectedTag ? "このタグの記事はまだありません。" : "まだ記事がありません。"}
+            {selectedTag
+              ? "このタグの記事はまだありません。"
+              : "まだ記事がありません。"}
           </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
               <Link href={`/posts/${post.id}`} key={post.id} className="block">
                 <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {post.title}
+                  </h3>
 
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -121,12 +138,16 @@ export default function HomePage() {
                   )}
 
                   <p className="text-gray-600 text-sm mb-3">
-                    {post.body.length > 50 ? post.body.substring(0, 50) + "..." : post.body}
+                    {post.body.length > 50
+                      ? post.body.substring(0, 50) + "..."
+                      : post.body}
                   </p>
 
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>いいね {post.like_count}</span>
-                    <span>{new Date(post.created_at).toLocaleDateString("ja-JP")}</span>
+                    <span>
+                      {new Date(post.created_at).toLocaleDateString("ja-JP")}
+                    </span>
                   </div>
                 </div>
               </Link>

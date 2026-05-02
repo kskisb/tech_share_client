@@ -17,7 +17,11 @@ type TagSelectorProps = {
 
 const normalizeTagName = (value: string): string => value.trim().toLowerCase();
 
-export default function TagSelector({ selectedTags, onChange, disabled = false }: TagSelectorProps) {
+export default function TagSelector({
+  selectedTags,
+  onChange,
+  disabled = false,
+}: TagSelectorProps) {
   const [customTagInput, setCustomTagInput] = useState("");
   const fetcher = (url: string) => fetchApi(url);
   const { data } = useSWR("/tags", fetcher);
@@ -35,11 +39,13 @@ export default function TagSelector({ selectedTags, onChange, disabled = false }
     const alreadySelected = selectedTagSet.has(normalized);
 
     if (alreadySelected) {
-      onChange(selectedTags.filter((name) => normalizeTagName(name) != normalized));
+      onChange(
+        selectedTags.filter((name) => normalizeTagName(name) != normalized),
+      );
       return;
     }
 
-    onChange([ ...selectedTags, tagName ]);
+    onChange([...selectedTags, tagName]);
   };
 
   const addCustomTag = () => {
@@ -54,14 +60,16 @@ export default function TagSelector({ selectedTags, onChange, disabled = false }
       return;
     }
 
-    onChange([ ...selectedTags, trimmed ]);
+    onChange([...selectedTags, trimmed]);
     setCustomTagInput("");
   };
 
   const removeTag = (tagName: string) => {
     if (disabled) return;
     const normalized = normalizeTagName(tagName);
-    onChange(selectedTags.filter((name) => normalizeTagName(name) != normalized));
+    onChange(
+      selectedTags.filter((name) => normalizeTagName(name) != normalized),
+    );
   };
 
   return (

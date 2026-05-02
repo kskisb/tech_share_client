@@ -21,7 +21,8 @@ const getErrorMessage = (err: unknown, fallback: string): string => {
 };
 
 const authFetcher = async (url: string) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   if (!token) throw new Error("認証が必要です");
   return fetchApi(url);
 };
@@ -92,7 +93,9 @@ export default function NewPostPage() {
               {...register("title", { required: "タイトルを入力してください" })}
             />
             {errors.title && (
-              <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
@@ -119,7 +122,9 @@ export default function NewPostPage() {
               onChange={setSelectedTags}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">候補から選択、または新しいタグを追加できます</p>
+            <p className="text-xs text-gray-500 mt-1">
+              候補から選択、または新しいタグを追加できます
+            </p>
           </div>
 
           <div className="flex justify-end">
@@ -127,7 +132,9 @@ export default function NewPostPage() {
               type="submit"
               disabled={isSubmitting}
               className={`px-6 py-2 rounded text-white font-medium ${
-                isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                isSubmitting
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
               {isSubmitting ? "投稿中..." : "投稿する"}

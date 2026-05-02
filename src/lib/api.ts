@@ -1,7 +1,8 @@
 const API_BASE_URL = "http://localhost:3001/api/v1";
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");
@@ -16,7 +17,7 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({} as any));
+    const errorData = await response.json().catch(() => ({}) as any);
 
     const messageFromArray =
       Array.isArray(errorData?.errors) && errorData.errors.length > 0
