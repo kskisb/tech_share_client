@@ -46,13 +46,13 @@ export interface paths {
              * @example {
              *       "data": {
              *         "user": {
-             *           "id": 149,
+             *           "id": 419,
              *           "name": "Test User",
              *           "email": "test@example.com"
              *         }
              *       },
              *       "meta": {
-             *         "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNDksImV4cCI6MTc3NzgxNTE3Nn0.Dko4Bltr8xYyFiv0B5nix4ORdfIekISt-GMhNH4L7UY"
+             *         "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0MTksImV4cCI6MTc3NzkwNDY5NH0.d_PGgQsEkGc-WHHGXu-ngUG2WlDLtUHvZAOiQ0H7tws"
              *       }
              *     }
              */
@@ -129,7 +129,7 @@ export interface paths {
              * @example {
              *       "data": {
              *         "user": {
-             *           "id": 157,
+             *           "id": 427,
              *           "name": "Me User",
              *           "email": "me@test.com"
              *         }
@@ -231,13 +231,13 @@ export interface paths {
              * @example {
              *       "data": {
              *         "user": {
-             *           "id": 156,
+             *           "id": 426,
              *           "name": "Test User",
              *           "email": "test@exaple.com"
              *         }
              *       },
              *       "meta": {
-             *         "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNTYsImV4cCI6MTc3NzgxNTE3Nn0.VUYw60Add-4hFBaHzIvjZe4yRJyc2T1b3KBm0oG9-IE"
+             *         "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0MjYsImV4cCI6MTc3NzkwNDY5NH0.B-clH4Ulabg_px-ozVf2P0RCjQdiXp1kWu76-pypQO0"
              *       }
              *     }
              */
@@ -302,6 +302,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
+          /** @example Rails */
+          q?: string;
           /** @example unknown-tag */
           tag?: string;
         };
@@ -388,14 +390,14 @@ export interface paths {
              * @example {
              *       "data": {
              *         "post": {
-             *           "id": 102,
-             *           "user_id": 131,
+             *           "id": 358,
+             *           "user_id": 401,
              *           "title": "重複タグ",
              *           "body": "本文",
-             *           "created_at": "2026-05-02T13:32:55.899Z",
+             *           "created_at": "2026-05-03T14:24:54.013Z",
              *           "tags": [
              *             {
-             *               "id": 36,
+             *               "id": 127,
              *               "name": "python"
              *             }
              *           ],
@@ -510,11 +512,11 @@ export interface paths {
              * @example {
              *       "data": {
              *         "post": {
-             *           "id": 97,
-             *           "user_id": 125,
+             *           "id": 353,
+             *           "user_id": 395,
              *           "title": "記事タイトル",
              *           "body": "記事の本文",
-             *           "created_at": "2026-05-02T13:32:55.702Z",
+             *           "created_at": "2026-05-03T14:24:53.827Z",
              *           "tags": [],
              *           "like_count": 0,
              *           "liked_by_current_user": false,
@@ -579,7 +581,7 @@ export interface paths {
         query?: never;
         header?: never;
         path: {
-          /** @example 117 */
+          /** @example 373 */
           id: number;
         };
         cookie?: never;
@@ -664,7 +666,7 @@ export interface paths {
         query?: never;
         header?: never;
         path: {
-          /** @example 111 */
+          /** @example 367 */
           id: number;
         };
         cookie?: never;
@@ -702,14 +704,14 @@ export interface paths {
              * @example {
              *       "data": {
              *         "post": {
-             *           "id": 111,
-             *           "user_id": 141,
+             *           "id": 367,
+             *           "user_id": 411,
              *           "title": "更新タイトル",
              *           "body": "更新本文",
-             *           "created_at": "2026-05-02T13:32:56.046Z",
+             *           "created_at": "2026-05-03T14:24:54.163Z",
              *           "tags": [
              *             {
-             *               "id": 38,
+             *               "id": 129,
              *               "name": "vue"
              *             }
              *           ],
@@ -861,11 +863,11 @@ export interface paths {
              * @example {
              *       "data": {
              *         "comment": {
-             *           "id": 8,
-             *           "post_id": 77,
-             *           "user_id": 97,
+             *           "id": 29,
+             *           "post_id": 323,
+             *           "user_id": 365,
              *           "body": "有効なコメント",
-             *           "created_at": "2026-05-02T13:32:55.140Z"
+             *           "created_at": "2026-05-03T14:24:53.189Z"
              *         }
              *       }
              *     }
@@ -979,9 +981,9 @@ export interface paths {
         query?: never;
         header?: never;
         path: {
-          /** @example 12 */
+          /** @example 33 */
           id: number;
-          /** @example 83 */
+          /** @example 329 */
           post_id: number;
         };
         cookie?: never;
@@ -1100,10 +1102,10 @@ export interface paths {
              * @example {
              *       "data": {
              *         "like": {
-             *           "id": 14,
-             *           "post_id": 85,
-             *           "user_id": 111,
-             *           "created_at": "2026-05-02T13:32:55.469Z"
+             *           "id": 50,
+             *           "post_id": 331,
+             *           "user_id": 379,
+             *           "created_at": "2026-05-03T14:24:53.505Z"
              *         },
              *         "like_count": 1
              *       }

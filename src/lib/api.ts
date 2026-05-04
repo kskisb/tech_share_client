@@ -39,10 +39,17 @@ const parseEndpoint = (endpoint: string): OpenApiRequestConfig => {
   if (rawPath === "/tags") return { schemaPath: "/api/v1/tags" };
 
   if (rawPath === "/posts") {
+    const q = query.get("q");
     const tag = query.get("tag");
+    const queryParams: Record<string, string> = {};
+    if (q) queryParams.q = q;
+    if (tag) queryParams.tag = tag;
     return {
       schemaPath: "/api/v1/posts",
-      params: tag ? { query: { tag } } : undefined,
+      params:
+        Object.keys(queryParams).length > 0
+          ? { query: queryParams }
+          : undefined,
     };
   }
 
