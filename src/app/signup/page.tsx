@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { fetchApi } from "@/lib/api";
+import { syncAuthToken } from "@/lib/api-client";
 
 type SignupFormData = {
   name: string;
@@ -32,7 +33,7 @@ export default function SignupPage() {
       });
 
       if (responseData.meta && responseData.meta.token) {
-        localStorage.setItem("token", responseData.meta.token);
+        syncAuthToken(responseData.meta.token);
         router.push("/");
       }
     } catch (err: unknown) {
