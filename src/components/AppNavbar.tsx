@@ -11,21 +11,35 @@ type NavbarUser =
 
 type AppNavbarProps = {
   user: NavbarUser;
+  isLoadingAuth?: boolean;
   onLogout?: () => void;
 };
 
-export default function AppNavbar({ user, onLogout }: AppNavbarProps) {
+export default function AppNavbar({
+  user,
+  isLoadingAuth = false,
+  onLogout,
+}: AppNavbarProps) {
   return (
-    <header className="bg-white shadow">
-      <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+    <header className="bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm">
+      <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center min-h-[72px]">
         <Link
           href="/"
-          className="text-xl font-bold text-blue-600 hover:text-blue-700"
+          className="text-xl font-bold text-slate-900 hover:text-blue-700"
         >
           Tech Share
         </Link>
         <div>
-          {user ? (
+          {isLoadingAuth ? (
+            <div
+              className="flex items-center gap-3"
+              aria-label="認証状態を確認中"
+            >
+              <div className="h-4 w-24 rounded-full bg-slate-200 animate-pulse" />
+              <div className="h-9 w-24 rounded-lg bg-slate-200 animate-pulse" />
+              <div className="h-4 w-16 rounded-full bg-slate-200 animate-pulse" />
+            </div>
+          ) : user ? (
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user.name}さん</span>
               <Link

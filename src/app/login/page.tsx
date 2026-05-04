@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { fetchApi } from "@/lib/api";
+import { syncAuthToken } from "@/lib/api-client";
 import Link from "next/link";
 
 type LoginFormData = {
@@ -46,7 +47,7 @@ export default function LoginPage() {
       });
 
       if (responseData?.meta?.token) {
-        localStorage.setItem("token", responseData.meta.token);
+        syncAuthToken(responseData.meta.token);
         router.push("/");
       } else {
         throw new Error("トークンの取得に失敗しました");

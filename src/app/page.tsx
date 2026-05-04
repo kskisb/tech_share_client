@@ -60,10 +60,16 @@ export default function HomePage() {
   const posts: Post[] = postsData?.data?.posts || [];
   const tags: Tag[] = tagsData?.data?.tags || [];
 
-  if (isPostsLoading) {
+  const isInitialLoading = isPostsLoading && !postsData;
+
+  if (isInitialLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        読み込み中...
+      <div className="min-h-screen bg-slate-50 text-slate-900">
+        <main className="max-w-5xl mx-auto px-4 py-8 flex min-h-[calc(100vh-88px)] items-center justify-center">
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-sm text-slate-600 shadow-sm">
+            読み込み中...
+          </div>
+        </main>
       </div>
     );
   }
@@ -85,7 +91,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <main className="max-w-5xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">最新の記事</h2>
 
